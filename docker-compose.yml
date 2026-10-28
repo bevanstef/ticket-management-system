@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tms_db
+    environment:
+      POSTGRES_USER: tms_user
+      POSTGRES_PASSWORD: tms_pass
+      POSTGRES_DB: ticket_management
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: tms_backend
+    environment:
+      DATABASE_URL: postgresql://tms_user:tms_pass@db:5432/ticket_management
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: tms_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+
