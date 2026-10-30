@@ -28,7 +28,7 @@ ticket_types = Table(
     Column("id", Integer, primary_key=True, index=True),
     Column("name", String(50), unique=True, nullable=False),
     Column("price", Integer, nullable=False),  # price in Rs
-),
+)
 
 # ---------------------------------------------------------------------------
 # Tickets table (main entity)
