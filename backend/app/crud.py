@@ -48,9 +48,6 @@ def _row_to_ticket_read(row: Tuple) -> TicketRead:
         id,
         customer_name,
         contact_number,
-        status,
-        created_at,
-        updated_at,
         type_id,
         ticket_price,
         booked_at,
@@ -96,9 +93,77 @@ def create_ticket(session: Session, payload: TicketCreate) -> TicketRead:
             tickets.c.id,
             tickets.c.customer_name,
             tickets.c.contact_number,
-            tickets.c.status,
-            tickets.c.created_at,
-            tickets.c.updated_at,
+            tickets.c.type_id,
+            tickets.c.ticket_price,
+            tickets.c.booked_at,
+            ticket_types.c.name,
+            ticket_types.c.price,
+        )
+        .select_from(tickets.join(ticket_types, tickets.c.type_id == ticket_types.c.id))
+        .where(tickets.c.id == ticket_row.id)
+    )
+    joined = session.execute(join_stmt).first()
+    return _row_to_ticket_read(joined)
+
+
+def search_tickets(
+    session: Session,
+    ticket_id: Optional[int] = None,
+    name: Optional[str] = None,
+    contact: Optional[str] = None,
+) -> List[TicketRead]:
+    """Search tickets by optional criteria.
+
+    * ``ticket_id`` – exact match on ticket id.
+    * ``name`` – case‑insensitive partial match on ``customer_name`` (uses ILIKE).
+    * ``contact`` – case‑insensitive partial match on ``contact_number``.
+    Returns a list of matching ``TicketRead`` objects.
+    """
+    stmt = (
+        select(
+            tickets.c.id,
+            tickets.c.customer_name,
+            tickets.c.contact_number,
+            tickets.c.type_id,
+            tickets.c.ticket_price,
+            tickets.c.booked_at,
+            ticket_types.c.name,
+            ticket_types.c.price,
+        )
+        .select_from(tickets.join(ticket_types, tickets.c.type_id == ticket_types.c.id))
+    )
+    if ticket_id is not None:
+        stmt = stmt.where(tickets.c.id == ticket_id)
+    if name:
+        stmt = stmt.where(tickets.c.customer_name.ilike(f"%{name}%"))
+    if contact:
+        stmt = stmt.where(tickets.c.contact_number.ilike(f"%{contact}%"))
+    rows = session.execute(stmt).all()
+    return [_row_to_ticket_read(r) for r in rows]
+
+    """Insert a new ticket.
+
+    * ``payload`` is a ``TicketCreate`` Pydantic model (validated by FastAPI).
+    * The price is looked up from ``ticket_types`` based on ``payload.type_id``.
+    * ``booked_at`` defaults to ``datetime.utcnow()`` on the DB side.
+    """
+    price = _get_price_for_type(session, payload.type_id)
+    stmt = insert(tickets).values(
+        customer_name=payload.customer_name,
+        contact_number=payload.contact_number,
+        type_id=payload.type_id,
+        ticket_price=price,
+        # ``booked_at`` will be filled by the DB default (now()) if omitted
+    ).returning(*tickets.c)
+    result: Result = session.execute(stmt)
+    session.commit()
+    ticket_row = result.first()
+    # Join with ticket_types to include the nested ``type`` field
+    join_stmt = (
+        select(
+            tickets.c.id,
+            tickets.c.customer_name,
+            tickets.c.contact_number,
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,
@@ -119,9 +184,6 @@ def get_ticket(session: Session, ticket_id: int) -> Optional[TicketRead]:
             tickets.c.id,
             tickets.c.customer_name,
             tickets.c.contact_number,
-            tickets.c.status,
-            tickets.c.created_at,
-            tickets.c.updated_at,
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,
@@ -142,9 +204,6 @@ def list_tickets(session: Session, skip: int = 0, limit: int = 100) -> List[Tick
             tickets.c.id,
             tickets.c.customer_name,
             tickets.c.contact_number,
-            tickets.c.status,
-            tickets.c.created_at,
-            tickets.c.updated_at,
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,
@@ -191,9 +250,6 @@ def update_ticket(
             tickets.c.id,
             tickets.c.customer_name,
             tickets.c.contact_number,
-            tickets.c.status,
-            tickets.c.created_at,
-            tickets.c.updated_at,
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,

@@ -26,13 +26,20 @@ class TicketTypeCreate(TicketTypeBase):
 
 class TicketTypeRead(TicketTypeBase):
     id: int
+    price: int
 
 
 class TicketBase(BaseModel):
     customer_name: str = Field(..., max_length=100)
     contact_number: str = Field(..., max_length=20)
     type_id: int
-    ticket_price: int = Field(..., gt=0)
+    # The price is derived from the ticket type – client does not send it.
+    # It is optional for input; FastAPI will fill it in via the CRUD logic.
+    ticket_price: Optional[int] = Field(
+        None,
+        gt=0,
+        description="Ticket price – calculated from the ticket type.",
+    )
     booked_at: Optional[datetime] = None
 
     class Config:

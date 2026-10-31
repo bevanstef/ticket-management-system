@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: tms_user
       POSTGRES_PASSWORD: tms_pass
       POSTGRES_DB: ticket_management
+      TZ: Asia/Kolkata
+      PGTZ: Asia/Kolkata
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
@@ -18,6 +20,7 @@ services:
     container_name: tms_backend
     environment:
       DATABASE_URL: postgresql://tms_user:tms_pass@db:5432/ticket_management
+      TZ: Asia/Kolkata
     ports:
       - "8000:8000"
     depends_on:
