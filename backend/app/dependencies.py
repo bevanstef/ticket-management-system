@@ -1,14 +1,20 @@
 """Common FastAPI dependencies used across routers.
 
 * ``get_db`` – provides a SQLAlchemy Session (managed with ``yield``).
-* Additional deps (e.g., auth) can be added later.
+* ``get_current_user`` – validates JWT, returns ``{"id": int, "role": str}``.
 """
 
-from typing import Generator
+from typing import Generator, Dict
+
+from fastapi import Depends, HTTPException, status
+from jose import JWTError
+from sqlalchemy.orm import Session
 
 from .database import SessionLocal
+from .auth import decode_access_token, JWTError as AuthJWTError, oauth2_scheme
+from . import models
 
-def get_db() -> Generator:
+def get_db() -> Generator[Session, None, None]:
     """FastAPI dependency that yields a DB session and ensures it is closed.
 
     Usage::
@@ -22,4 +28,27 @@ def get_db() -> Generator:
         yield db
     finally:
         db.close()
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Dict[str, str]:
+    """Validate the JWT token and retrieve the corresponding user.
+
+    Returns a dict with ``id`` and ``role``. Raises ``401`` if validation fails.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = decode_access_token(token)
+        username: str | None = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(models.users).filter(models.users.c.username == username).first()
+    if user is None:
+        raise credentials_exception
+    return {"id": user.id, "role": user.role}
 

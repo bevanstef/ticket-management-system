@@ -1,22 +1,15 @@
-"""SQLAlchemy *Core* table definitions for the Ticket Management System."""    
+# ---------------------------------------------------------------------------
+# Users table (for authentication & RBAC)
+# ---------------------------------------------------------------------------
 
-from __future__ import annotations
-
-from datetime import datetime
-from typing import Optional
-
-from sqlalchemy import (
-    Table,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    func,
+users = Table(
+    "users",
+    Base.metadata,
+    Column("id", Integer, primary_key=True, index=True),
+    Column("username", String(50), unique=True, nullable=False),
+    Column("hashed_password", String(255), nullable=False),
+    Column("role", String(20), nullable=False),  # e.g., "staff" or "customer"
 )
-
-from .database import Base
 
 # ---------------------------------------------------------------------------
 # Ticket Types table (static reference data)
