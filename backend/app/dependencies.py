@@ -54,3 +54,16 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return {"id": user.id, "role": user.role}
 
+
+def require_staff(current_user: Dict = Depends(get_current_user)) -> Dict:
+    """Dependency that ensures the authenticated user has the 'staff' role.
+
+    Raises HTTP 403 Forbidden if the user is not staff.
+    """
+    if current_user.get("role") != "staff":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Staff privileges required",
+        )
+    return current_user
+

@@ -13,7 +13,10 @@ from .. import crud, schemas, dependencies
 router = APIRouter(prefix="/ticket-types", tags=["ticket-types"])
 
 @router.get("/", response_model=list[schemas.TicketTypeRead])
-def list_ticket_types(db: Session = Depends(dependencies.get_db)):
-    """Return all ticket‑type rows (id, name, price)."""
+def list_ticket_types(
+    db: Session = Depends(dependencies.get_db),
+    current_user: dict = Depends(dependencies.require_staff),
+):
+    """Return all ticket‑type rows (id, name, price) – staff only."""
     return crud.list_ticket_types(db)
 

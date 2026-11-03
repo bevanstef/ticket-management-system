@@ -40,7 +40,8 @@ CREATE INDEX IF NOT EXISTS ix_users_id ON users (id);
 -- admin / adminpass (staff)
 -- customer1 / customerpass (customer)
 INSERT INTO users (username, hashed_password, role) VALUES
-('admin', '$2b$12$4GyQib/ExrSIZnb9Ptwt7.npwQUzbp4n1E0URuCUKm1NeT4bCDu2K', 'staff')
+('admin', '$2b$12$4GyQib/ExrSIZnb9Ptwt7.npwQUzbp4n1E0URuCUKm1NeT4bCDu2K', 'staff'),
+('customer1', '$2b$12$fZeA/Cp8lJFfpvf62XeOO.JN5sKIoq2IfYWM0/emhNl/N2GHrfGC6', 'customer')
 ON CONFLICT (username) DO NOTHING;
 
 
