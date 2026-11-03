@@ -20,6 +20,7 @@ services:
     container_name: tms_backend
     environment:
       DATABASE_URL: postgresql://tms_user:tms_pass@db:5432/ticket_management
+      JWT_SECRET: ${JWT_SECRET}
       TZ: Asia/Kolkata
     ports:
       - "8000:8000"

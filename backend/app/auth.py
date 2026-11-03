@@ -10,6 +10,10 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from passlib.context import CryptContext
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 from jose import JWTError, jwt
 
 # ---------------------------------------------------------------------------
@@ -31,7 +35,9 @@ def get_password_hash(password: str) -> str:
 # JWT handling
 # ---------------------------------------------------------------------------
 
-SECRET_KEY: str = "replace-this-with-a-secure-random-secret"
+# NOTE: In production replace the placeholder with a securely generated secret.
+# Here we read it from the environment variable JWT_SECRET.
+SECRET_KEY: str = os.getenv("JWT_SECRET", "replace-this-with-a-secure-random-secret")
 ALGORITHM: str = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 

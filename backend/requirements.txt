@@ -7,5 +7,8 @@ python-dotenv>=1.0.1
 alembic>=1.13.2
 pytest>=8
 psycopg[binary]
-
 httpx2
+passlib[bcrypt]
+bcrypt<=4.0.1
+python-jose[cryptography]
+python-multipart
