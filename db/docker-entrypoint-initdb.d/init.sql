@@ -27,4 +27,21 @@ CREATE TABLE IF NOT EXISTS tickets (
 );
 CREATE INDEX IF NOT EXISTS ix_tickets_id ON tickets (id);
 
+-- Users table (authentication & RBAC)
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    hashed_password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_users_id ON users (id);
+
+-- Seed users:
+-- admin / adminpass (staff)
+-- customer1 / customerpass (customer)
+INSERT INTO users (username, hashed_password, role) VALUES
+('admin', '$2b$12$4GyQib/ExrSIZnb9Ptwt7.npwQUzbp4n1E0URuCUKm1NeT4bCDu2K', 'staff')
+ON CONFLICT (username) DO NOTHING;
+
+
 

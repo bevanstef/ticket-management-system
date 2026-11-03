@@ -8,6 +8,7 @@ from typing import Generator, Dict
 
 from fastapi import Depends, HTTPException, status
 from jose import JWTError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .database import SessionLocal
@@ -47,7 +48,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except JWTError:
         raise credentials_exception
 
-    user = db.query(models.users).filter(models.users.c.username == username).first()
+    stmt = select(models.users).where(models.users.c.username == username)
+    user = db.execute(stmt).first()
     if user is None:
         raise credentials_exception
     return {"id": user.id, "role": user.role}

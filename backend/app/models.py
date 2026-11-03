@@ -1,3 +1,23 @@
+"""SQLAlchemy Core table definitions for the Ticket Management System."""
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import (
+    Table,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
+
+from .database import Base
+
 # ---------------------------------------------------------------------------
 # Users table (for authentication & RBAC)
 # ---------------------------------------------------------------------------
