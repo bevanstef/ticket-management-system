@@ -28,6 +28,11 @@ def login(form: LoginForm, db: Session = Depends(dependencies.get_db)):
     if not auth.verify_password(form.password, user_row.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Incorrect username or password")
-    access_token = auth.create_access_token({"sub": user_row.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token = auth.create_access_token({"sub": user_row.username, "role": user_row.role})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "username": user_row.username,
+        "role": user_row.role,
+    }
 
