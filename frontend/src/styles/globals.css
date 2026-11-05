@@ -1,0 +1,26 @@
+/* frontend/src/styles/globals.css */
+:root {
+  --primary-dark: #0a192f;
+  --secondary-dark: #112240;
+  --accent-light: #38bdf8;
+  --accent-blue: #0284c7;
+  --text-white: #ffffff;
+  --text-muted: #94a3b8;
+  --card-bg: rgba(17, 34, 64, 0.85);
+  --input-bg: #0d1b2a;
+  --border-color: rgba(56, 189, 248, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--primary-dark);
+  color: var(--text-white);
+  min-height: 100vh;
+}
