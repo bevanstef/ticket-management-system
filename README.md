@@ -109,3 +109,23 @@ Output includes 7 passing integration tests covering:
 - Customer 403 Forbidden enforcement on staff endpoints
 - Staff ticket search and ticket types listing
 
+
+---
+
+## Frontend – Modern Login UI
+
+The login page has been redesigned with a clean dark‑blue / light‑blue theme and a glass‑morphism card.
+
+- **New stylesheet**: `frontend/src/styles/globals.css` defines global CSS variables `--color-primary-dark`, `--color-primary-light`, and `--color-bg-white`.
+- **Login component**: `frontend/src/pages/login.tsx` now presents a centered card with logo placeholder, styled inputs, and a submit button.
+- **Removed quick‑test logins**: The previous badge/footer that auto‑filled test credentials has been removed for a production‑like UI.
+- **Home page integration**: `frontend/src/pages/index.tsx` now uses `useAuth()` to display the logged‑in user’s **username** and **role**, and provides a **Log out** button.
+- **Authentication flow**: The JWT returned by `/auth/login` now contains `username` and `role`, which are decoded by `frontend/src/context/AuthContext.tsx` and made available throughout the app.
+
+> **How to test**
+> 1. Run the stack (`docker compose up -d` then `npm run dev`).
+> 2. Open `http://localhost:3000/login` and sign in with the seeded users (`admin/adminpass` or `customer1/customerpass`).
+> 3. After login you should see a welcome banner on the home page like:
+>    `Logged in as admin (staff)` and a **Log out** button.
+
+These changes give the application a more polished appearance while keeping the authentication logic untouched.
