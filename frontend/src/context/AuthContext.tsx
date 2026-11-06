@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     setToken(null);
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      window.location.href = "/"; // redirect to home after logout
     }
   };
 

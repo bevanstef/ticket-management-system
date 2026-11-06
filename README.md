@@ -112,20 +112,27 @@ Output includes 7 passing integration tests covering:
 
 ---
 
-## Frontend – Modern Login UI
+## Frontend Application
 
-The login page has been redesigned with a clean dark‑blue / light‑blue theme and a glass‑morphism card.
+The Next.js frontend is built with a dark‑blue / light‑blue glass‑morphism theme and complete role-based access control.
 
-- **New stylesheet**: `frontend/src/styles/globals.css` defines global CSS variables `--color-primary-dark`, `--color-primary-light`, and `--color-bg-white`.
-- **Login component**: `frontend/src/pages/login.tsx` now presents a centered card with logo placeholder, styled inputs, and a submit button.
-- **Removed quick‑test logins**: The previous badge/footer that auto‑filled test credentials has been removed for a production‑like UI.
-- **Home page integration**: `frontend/src/pages/index.tsx` now uses `useAuth()` to display the logged‑in user’s **username** and **role**, and provides a **Log out** button.
-- **Authentication flow**: The JWT returned by `/auth/login` now contains `username` and `role`, which are decoded by `frontend/src/context/AuthContext.tsx` and made available throughout the app.
+### Pages & Features
+- **Dashboard (`/`)**: Displays the authenticated user's profile and role. Offers quick action cards tailored to their role (`staff` vs. `customer`).
+- **Login (`/login`)**: Centered glass-card login page with error feedback and token persistence.
+- **Manage Tickets (`/tickets`)** *(Staff only)*:
+  - Lists all tickets with ticket type badges (Regular, Premium, VIP, VVIP) and formatted prices.
+  - Multi-parameter search filter (by Ticket ID, Customer Name, and Contact Number).
+  - Single-click ticket deletion with confirmation prompt.
+  - Role-protected via `<ProtectedRoute requiredRole="staff">`.
+- **Book Ticket (`/book`)** *(Staff & Customer)*:
+  - Form to book a ticket by specifying Customer Name, Contact Number, and Ticket Type.
+  - Real-time base price preview according to selected pass tier.
+  - Role-protected via `<ProtectedRoute>`.
+- **Route Guard (`ProtectedRoute.tsx`)**: Reusable wrapper that verifies authentication and required roles, redirecting unauthenticated users to `/login` or displaying an *Access Denied* screen if unauthorized.
 
 > **How to test**
-> 1. Run the stack (`docker compose up -d` then `npm run dev`).
-> 2. Open `http://localhost:3000/login` and sign in with the seeded users (`admin/adminpass` or `customer1/customerpass`).
-> 3. After login you should see a welcome banner on the home page like:
->    `Logged in as admin (staff)` and a **Log out** button.
+> 1. Run the stack (`docker compose up -d` then `cd frontend && npm run dev`).
+> 2. Open `http://localhost:3000/login` and sign in:
+>    - Sign in as `admin` (`adminpass`) &rarr; Navigate to `/tickets` to view, search, and delete tickets.
+>    - Sign in as `customer1` (`customerpass`) &rarr; Access `/book` to reserve tickets; visiting `/tickets` displays *Access Denied*.
 
-These changes give the application a more polished appearance while keeping the authentication logic untouched.
