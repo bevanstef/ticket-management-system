@@ -122,6 +122,7 @@ The Next.js frontend is built with a dark‑blue / light‑blue glass‑morphism
 - **Manage Tickets (`/tickets`)** *(Staff only)*:
   - Lists all tickets with ticket type badges (Regular, Premium, VIP, VVIP) and formatted prices.
   - Multi-parameter search filter (by Ticket ID, Customer Name, and Contact Number).
+  - Modal-based ticket editing (update customer name, contact number, or tier with live recalculated LKR price).
   - Single-click ticket deletion with confirmation prompt.
   - Role-protected via `<ProtectedRoute requiredRole="staff">`.
 - **Book Ticket (`/book`)** *(Staff & Customer)*:

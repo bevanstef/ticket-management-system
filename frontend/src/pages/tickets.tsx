@@ -22,6 +22,13 @@ interface Ticket {
   type?: TicketType;
 }
 
+const TICKET_TYPES = [
+  { id: 1, name: "Regular", price: 1500 },
+  { id: 2, name: "Premium", price: 2000 },
+  { id: 3, name: "VIP", price: 3500 },
+  { id: 4, name: "VVIP", price: 6000 },
+];
+
 export default function TicketsPage() {
   const { user, logout } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -33,6 +40,58 @@ export default function TicketsPage() {
   const [searchId, setSearchId] = useState<string>("");
   const [searchName, setSearchName] = useState<string>("");
   const [searchContact, setSearchContact] = useState<string>("");
+
+  // Edit modal states
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [editCustomerName, setEditCustomerName] = useState<string>("");
+  const [editContactNumber, setEditContactNumber] = useState<string>("");
+  const [editTypeId, setEditTypeId] = useState<number>(1);
+  const [savingEdit, setSavingEdit] = useState<boolean>(false);
+  const [editErrorMessage, setEditErrorMessage] = useState<string>("");
+
+  const handleOpenEditModal = (ticket: Ticket) => {
+    setEditingTicket(ticket);
+    setEditCustomerName(ticket.customer_name);
+    setEditContactNumber(ticket.contact_number);
+    setEditTypeId(ticket.type_id);
+    setEditErrorMessage("");
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingTicket(null);
+    setEditErrorMessage("");
+  };
+
+  const handleSaveEdit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingTicket) return;
+
+    if (!editCustomerName.trim() || !editContactNumber.trim()) {
+      setEditErrorMessage("Customer name and contact number are required.");
+      return;
+    }
+
+    try {
+      setSavingEdit(true);
+      setEditErrorMessage("");
+
+      const response = await api.put<Ticket>(`/tickets/${editingTicket.id}`, {
+        customer_name: editCustomerName.trim(),
+        contact_number: editContactNumber.trim(),
+        type_id: editTypeId,
+      });
+
+      const updated = response.data;
+      setTickets((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      setSuccessMessage(`Ticket #${updated.id} updated successfully.`);
+      setTimeout(() => setSuccessMessage(""), 4000);
+      handleCloseEditModal();
+    } catch (err: any) {
+      setEditErrorMessage(err.response?.data?.detail || "Failed to update ticket.");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const loadTickets = async () => {
     try {
@@ -227,13 +286,22 @@ export default function TicketsPage() {
                         })}
                       </td>
                       <td>
-                        <button
-                          onClick={() => handleDelete(t.id)}
-                          className={styles.deleteBtn}
-                          title="Delete ticket"
-                        >
-                          Delete
-                        </button>
+                        <div className={styles.actionButtonGroup}>
+                          <button
+                            onClick={() => handleOpenEditModal(t)}
+                            className={styles.editBtn}
+                            title="Edit ticket"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(t.id)}
+                            className={styles.deleteBtn}
+                            title="Delete ticket"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -241,6 +309,108 @@ export default function TicketsPage() {
               </table>
             )}
           </main>
+
+          {/* Edit Ticket Modal */}
+          {editingTicket && (
+            <div className={styles.modalOverlay} onClick={handleCloseEditModal}>
+              <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+                <div className={styles.modalHeader}>
+                  <h2>Edit Ticket #{editingTicket.id}</h2>
+                  <button
+                    onClick={handleCloseEditModal}
+                    className={styles.closeBtn}
+                    title="Close modal"
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                {editErrorMessage && (
+                  <div className={`${styles.alert} ${styles.alertError}`} style={{ marginBottom: "1rem" }}>
+                    {editErrorMessage}
+                  </div>
+                )}
+
+                <form onSubmit={handleSaveEdit}>
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel} htmlFor="editCustomerName">
+                      Customer Name
+                    </label>
+                    <input
+                      id="editCustomerName"
+                      type="text"
+                      required
+                      className={styles.modalInput}
+                      value={editCustomerName}
+                      onChange={(e) => setEditCustomerName(e.target.value)}
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel} htmlFor="editContactNumber">
+                      Contact Number
+                    </label>
+                    <input
+                      id="editContactNumber"
+                      type="text"
+                      required
+                      className={styles.modalInput}
+                      value={editContactNumber}
+                      onChange={(e) => setEditContactNumber(e.target.value)}
+                      placeholder="Enter contact number"
+                    />
+                  </div>
+
+                  <div className={styles.modalFormGroup}>
+                    <label className={styles.modalLabel} htmlFor="editTypeId">
+                      Ticket Tier / Type
+                    </label>
+                    <select
+                      id="editTypeId"
+                      className={styles.modalSelect}
+                      value={editTypeId}
+                      onChange={(e) => setEditTypeId(Number(e.target.value))}
+                    >
+                      {TICKET_TYPES.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name} (Rs. {type.price.toLocaleString()})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.priceNotice}>
+                    <span className={styles.priceNoticeLabel}>Updated Price:</span>
+                    <span className={styles.priceNoticeValue}>
+                      Rs.{" "}
+                      {(
+                        TICKET_TYPES.find((t) => t.id === editTypeId)?.price || 0
+                      ).toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className={styles.modalFooter}>
+                    <button
+                      type="button"
+                      onClick={handleCloseEditModal}
+                      className={styles.btnSecondary}
+                      disabled={savingEdit}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.btnPrimary}
+                      disabled={savingEdit}
+                    >
+                      {savingEdit ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </ProtectedRoute>
