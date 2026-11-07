@@ -1,6 +1,7 @@
 // src/pages/login.tsx
 import { useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../context/AuthContext";
 import styles from "../styles/Login.module.css";
@@ -162,6 +163,13 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          <p className={styles.switchAuthText}>
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className={styles.switchAuthLink}>
+              Create an Account
+            </Link>
+          </p>
         </div>
       </div>
     </>

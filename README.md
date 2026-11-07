@@ -53,6 +53,7 @@ The API enforces role-based permissions using signed JSON Web Tokens (JWT).
 | Endpoint | Method | Role Allowed | Description |
 |---|---|---|---|
 | `/auth/login` | POST | Public | Authenticate and obtain JWT access token |
+| `/auth/register` | POST | Public | Register a new customer account |
 | `/tickets/` | POST | `customer`, `staff` | Book/create a new ticket |
 | `/tickets/` | GET | `staff` only | List tickets (with pagination) |
 | `/tickets/{id}` | GET | `staff` only | Retrieve a specific ticket |
@@ -118,7 +119,8 @@ The Next.js frontend is built with a dark‑blue / light‑blue glass‑morphism
 
 ### Pages & Features
 - **Dashboard (`/`)**: Displays the authenticated user's profile and role. Offers quick action cards tailored to their role (`staff` vs. `customer`).
-- **Login (`/login`)**: Centered glass-card login page with error feedback and token persistence.
+- **Login (`/login`)**: Centered glass-card login page with error feedback, token persistence, and sign-up link.
+- **Register (`/register`)**: Customer registration form with password confirmation, client-side validation, and automatic post-registration login.
 - **Manage Tickets (`/tickets`)** *(Staff only)*:
   - Lists all tickets with ticket type badges (Regular, Premium, VIP, VVIP) and formatted prices.
   - Multi-parameter search filter (by Ticket ID, Customer Name, and Contact Number).

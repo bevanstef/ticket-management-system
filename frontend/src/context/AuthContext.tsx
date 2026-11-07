@@ -17,6 +17,7 @@ interface AuthContextProps {
   user: User | null;
   token: string | null;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -79,6 +80,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(currentUser);
   };
 
+  const register = async (username: string, password: string) => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+    const resp = await fetch(`${apiUrl}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail ?? "Registration failed");
+    }
+
+    const data = await resp.json();
+    const jwt = data.access_token as string;
+    const decoded = decodeToken(jwt);
+
+    const currentUser: User = {
+      username: data.username ?? decoded.username,
+      role: data.role ?? decoded.role,
+    };
+
+    localStorage.setItem("tms_token", jwt);
+    localStorage.setItem("tms_user", JSON.stringify(currentUser));
+    setToken(jwt);
+    setUser(currentUser);
+  };
+
   const logout = () => {
     localStorage.removeItem("tms_token");
     localStorage.removeItem("tms_user");
@@ -107,6 +136,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(false);
   }, []);
 
-  const value: AuthContextProps = { user, token, login, logout, loading };
+  const value: AuthContextProps = { user, token, login, register, logout, loading };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
