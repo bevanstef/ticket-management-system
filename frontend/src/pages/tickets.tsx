@@ -35,6 +35,7 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const [useCustomLogo, setUseCustomLogo] = useState<boolean>(true);
 
   // Search filter states
   const [searchId, setSearchId] = useState<string>("");
@@ -180,8 +181,36 @@ export default function TicketsPage() {
           {/* Header */}
           <header className={styles.header}>
             <div className={styles.titleArea}>
-              <h1>Ticket Management Dashboard</h1>
-              <p>Review, search, and manage issued tickets</p>
+              {useCustomLogo ? (
+                <img
+                  src="/logo5.PNG"
+                  alt="Ticket Management System Logo"
+                  className={styles.titleLogo}
+                  onError={() => setUseCustomLogo(false)}
+                />
+              ) : (
+                <div className={styles.svgFallbackWrapper}>
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#38bdf8"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                    <path d="M13 5v2" />
+                    <path d="M13 17v2" />
+                    <path d="M13 11v2" />
+                  </svg>
+                </div>
+              )}
+              <div className={styles.titleText}>
+                <h1>Ticket Management Dashboard</h1>
+                <p>Review, search, and manage issued tickets</p>
+              </div>
             </div>
 
             <div className={styles.userControls}>

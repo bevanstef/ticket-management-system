@@ -22,7 +22,35 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.titleArea h1 {
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.titleLogo {
+  height: 80px;
+  width: auto;
+  max-width: 130px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.svgFallbackWrapper {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
+}
+
+.titleText h1 {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
@@ -32,7 +60,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-.titleArea p {
+.titleText p {
   margin: 0.25rem 0 0;
   font-size: 0.875rem;
   color: #94a3b8;
