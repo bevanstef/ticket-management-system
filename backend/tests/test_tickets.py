@@ -41,6 +41,31 @@ def setup_test_data(staff_headers):
 
 # ==================== AUTHENTICATION TESTS ====================
 
+def test_register_success():
+    """Registering a new user should succeed and return customer token."""
+    import time
+    unique_username = f"newuser_{int(time.time() * 1000)}"
+    response = client.post(
+        "/auth/register",
+        json={"username": unique_username, "password": "securepassword123"},
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert "access_token" in data
+    assert data["username"] == unique_username
+    assert data["role"] == "customer"
+
+
+def test_register_duplicate_username():
+    """Registering with an existing username should return 400 Bad Request."""
+    response = client.post(
+        "/auth/register",
+        json={"username": "admin", "password": "anotherpassword"},
+    )
+    assert response.status_code == 400
+    assert "already registered" in response.json()["detail"].lower()
+
+
 def test_login_success():
     """Valid credentials should return an access token."""
     response = client.post("/auth/login", json={"username": "admin", "password": "adminpass"})

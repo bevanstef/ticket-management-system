@@ -57,3 +57,24 @@ class TicketRead(TicketBase):
     type: TicketTypeRead
 
 
+# ---------------------------------------------------------------------------
+# User schemas (Authentication & Registration)
+# ---------------------------------------------------------------------------
+
+class UserBase(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50, description="Unique username")
+
+
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=6, max_length=100, description="Plain text password (min 6 characters)")
+
+
+class UserRead(UserBase):
+    id: int
+    role: str
+
+    class Config:
+        orm_mode = True
+
+
+
