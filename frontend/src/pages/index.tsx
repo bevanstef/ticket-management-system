@@ -17,6 +17,7 @@ export interface EventItem {
   fullDetails: string;
   bannerGradient: string;
   emoji: string;
+  image: string;
   tiers: { name: string; price: number }[];
 }
 
@@ -30,6 +31,7 @@ export const SAMPLE_EVENTS: EventItem[] = [
     venue: "CR & FC Grounds",
     city: "Colombo 07",
     emoji: "🎵",
+    image: "/pic 1.png",
     bannerGradient: "linear-gradient(135deg, #ec4899, #8b5cf6, #3b82f6)",
     description: "An electrifying night celebrating top Sri Lankan live artists, acoustic bands, and high-energy Baila beats by the green.",
     fullDetails:
@@ -50,6 +52,7 @@ export const SAMPLE_EVENTS: EventItem[] = [
     venue: "BMICH (Bandaranaike Memorial International Conference Hall)",
     city: "Colombo",
     emoji: "🚀",
+    image: "/pic 2.png",
     bannerGradient: "linear-gradient(135deg, #0ea5e9, #2563eb, #6366f1)",
     description: "The island's premier technology gathering uniting IT leaders, software engineers, AI researchers, and startups.",
     fullDetails:
@@ -70,6 +73,7 @@ export const SAMPLE_EVENTS: EventItem[] = [
     venue: "R. Premadasa International Cricket Stadium",
     city: "Colombo",
     emoji: "🏏",
+    image: "/pic 3.png",
     bannerGradient: "linear-gradient(135deg, #10b981, #059669, #0284c7)",
     description: "High-octane T20 cricket clash between top island rival franchises under floodlights at Khettarama.",
     fullDetails:
@@ -90,6 +94,7 @@ export const SAMPLE_EVENTS: EventItem[] = [
     venue: "Lionel Wendt Theatre",
     city: "Colombo 07",
     emoji: "🎙️",
+    image: "/pic 4.png",
     bannerGradient: "linear-gradient(135deg, #f59e0b, #ef4444, #ec4899)",
     description: "Hilarious stand-up comedy special tackling Sri Lankan everyday life, traffic, culture, and corporate drama.",
     fullDetails:
@@ -110,6 +115,7 @@ export const SAMPLE_EVENTS: EventItem[] = [
     venue: "Kandy Lake Club Cultural Hall",
     city: "Kandy",
     emoji: "🥁",
+    image: "/pic 5.png",
     bannerGradient: "linear-gradient(135deg, #d97706, #b45309, #7c2d12)",
     description: "Breathtaking traditional Kandyan dancing, Geta Bera drumming, and dramatic acrobatic fire walks.",
     fullDetails:
@@ -232,7 +238,15 @@ export default function Home() {
                   className={styles.cardHeaderBanner}
                   style={{ background: item.bannerGradient }}
                 >
-                  <span className={styles.cardEmoji}>{item.emoji}</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className={styles.cardImage}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                  />
                   <span className={styles.categoryBadge}>{item.category}</span>
                 </div>
 
@@ -293,7 +307,15 @@ export default function Home() {
                 className={styles.modalHeader}
                 style={{ background: activeEvent.bannerGradient }}
               >
-                <span style={{ fontSize: "4.5rem" }}>{activeEvent.emoji}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeEvent.image}
+                  alt={activeEvent.title}
+                  className={styles.modalImage}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
                 <button
                   className={styles.modalCloseBtn}
                   onClick={() => setActiveEvent(null)}

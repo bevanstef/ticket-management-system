@@ -225,13 +225,24 @@
 }
 
 .cardHeaderBanner {
-  height: 140px;
+  height: 180px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
+  background-color: #0b1528;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.eventCard:hover .cardImage {
+  transform: scale(1.05);
 }
 
 .cardEmoji {
@@ -387,13 +398,21 @@
 }
 
 .modalHeader {
-  height: 180px;
+  height: 220px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
+  background-color: #0b1528;
+}
+
+.modalImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .modalCloseBtn {
