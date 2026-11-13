@@ -215,8 +215,7 @@ export default function TicketsPage() {
 
             <div className={styles.userControls}>
               <div className={styles.userInfo}>
-                <span>{user?.username}</span>
-                <span className={styles.roleBadge}>{user?.role}</span>
+                <span className={styles.roleBadge}>admin</span>
               </div>
               <Link href="/" className={styles.navLink}>
                 Home
