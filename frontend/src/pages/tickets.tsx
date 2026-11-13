@@ -14,6 +14,7 @@ interface TicketType {
 
 interface Ticket {
   id: number;
+  event_name?: string;
   customer_name: string;
   contact_number: string;
   type_id: number;
@@ -41,6 +42,7 @@ export default function TicketsPage() {
   const [searchId, setSearchId] = useState<string>("");
   const [searchName, setSearchName] = useState<string>("");
   const [searchContact, setSearchContact] = useState<string>("");
+  const [searchEvent, setSearchEvent] = useState<string>("");
 
   // Edit modal states
   const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
@@ -113,7 +115,7 @@ export default function TicketsPage() {
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
-    if (!searchId && !searchName && !searchContact) {
+    if (!searchId && !searchName && !searchContact && !searchEvent) {
       loadTickets();
       return;
     }
@@ -125,6 +127,7 @@ export default function TicketsPage() {
       if (searchId) params.ticket_id = searchId;
       if (searchName) params.name = searchName;
       if (searchContact) params.contact = searchContact;
+      if (searchEvent) params.event = searchEvent;
 
       const response = await api.get<Ticket[]>("/tickets/search", { params });
       setTickets(response.data);
@@ -139,6 +142,7 @@ export default function TicketsPage() {
     setSearchId("");
     setSearchName("");
     setSearchContact("");
+    setSearchEvent("");
     loadTickets();
   };
 
@@ -258,10 +262,17 @@ export default function TicketsPage() {
                 onChange={(e) => setSearchContact(e.target.value)}
                 className={styles.searchInput}
               />
+              <input
+                type="text"
+                placeholder="Event Name"
+                value={searchEvent}
+                onChange={(e) => setSearchEvent(e.target.value)}
+                className={styles.searchInput}
+              />
               <button type="submit" className={styles.btnPrimary}>
                 Search
               </button>
-              {(searchId || searchName || searchContact) && (
+              {(searchId || searchName || searchContact || searchEvent) && (
                 <button type="button" onClick={handleResetSearch} className={styles.btnSecondary}>
                   Clear
                 </button>
@@ -285,6 +296,7 @@ export default function TicketsPage() {
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Event</th>
                     <th>Customer Name</th>
                     <th>Contact</th>
                     <th>Ticket Type</th>
@@ -297,6 +309,9 @@ export default function TicketsPage() {
                   {tickets.map((t) => (
                     <tr key={t.id}>
                       <td style={{ fontWeight: 600 }}>#{t.id}</td>
+                      <td style={{ fontWeight: 600, color: "#e2e8f0" }}>
+                        {t.event_name || "Colombo Music Carnival & Baila Night"}
+                      </td>
                       <td>{t.customer_name}</td>
                       <td>{t.contact_number}</td>
                       <td>
@@ -305,7 +320,7 @@ export default function TicketsPage() {
                         </span>
                       </td>
                       <td style={{ fontWeight: 600, color: "#38bdf8" }}>
-                        Rs. {Number(t.ticket_price).toLocaleString()}
+                        LKR {Number(t.ticket_price).toLocaleString()}
                       </td>
                       <td style={{ color: "#94a3b8" }}>
                         {new Date(t.booked_at).toLocaleString("en-LK", {

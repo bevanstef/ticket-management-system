@@ -60,6 +60,7 @@ export default function BookTicketPage() {
     try {
       setSubmitting(true);
       const res = await api.post("/tickets/", {
+        event_name: selectedEvent?.title || "Colombo Music Carnival & Baila Night",
         customer_name: customerName.trim(),
         contact_number: contactNumber.trim(),
         type_id: typeId,
