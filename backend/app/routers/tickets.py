@@ -35,11 +35,12 @@ def search_tickets(
     ticket_id: Optional[int] = Query(None, description="Exact ticket ID"),
     name: Optional[str] = Query(None, description="Customer name (case‑insensitive)"),
     contact: Optional[str] = Query(None, description="Contact number (case‑insensitive)"),
+    event: Optional[str] = Query(None, description="Event name (case‑insensitive)"),
     db: Session = Depends(dependencies.get_db),
     current_user: dict = Depends(dependencies.require_staff),
 ):
     """Search tickets by optional criteria – staff only."""
-    return crud.search_tickets(db, ticket_id=ticket_id, name=name, contact=contact)
+    return crud.search_tickets(db, ticket_id=ticket_id, name=name, contact=contact, event=event)
 
 # ---------- READ ONE (staff only) ----------
 @router.get("/{ticket_id}", response_model=schemas.TicketRead)

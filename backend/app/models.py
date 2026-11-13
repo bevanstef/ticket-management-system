@@ -51,6 +51,7 @@ tickets = Table(
     "tickets",
     Base.metadata,
     Column("id", Integer, primary_key=True, index=True),
+    Column("event_name", String(150), nullable=False, server_default="Colombo Music Carnival & Baila Night"),
     Column("customer_name", String(100), nullable=False),
     Column("contact_number", String(20), nullable=False),
     Column("type_id", Integer, ForeignKey("ticket_types.id"), nullable=False),

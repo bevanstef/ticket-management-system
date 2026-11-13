@@ -46,6 +46,7 @@ def _row_to_ticket_read(row: Tuple) -> TicketRead:
     """
     (
         id,
+        event_name,
         customer_name,
         contact_number,
         type_id,
@@ -57,6 +58,7 @@ def _row_to_ticket_read(row: Tuple) -> TicketRead:
     ticket_type = TicketTypeRead(id=type_id, name=type_name, price=type_price)
     return TicketRead(
         id=id,
+        event_name=event_name or "Colombo Music Carnival & Baila Night",
         customer_name=customer_name,
         contact_number=contact_number,
         type_id=type_id,
@@ -77,12 +79,13 @@ def create_ticket(session: Session, payload: TicketCreate) -> TicketRead:
     * ``booked_at`` defaults to ``datetime.utcnow()`` on the DB side.
     """
     price = _get_price_for_type(session, payload.type_id)
+    event_title = payload.event_name or "Colombo Music Carnival & Baila Night"
     stmt = insert(tickets).values(
+        event_name=event_title,
         customer_name=payload.customer_name,
         contact_number=payload.contact_number,
         type_id=payload.type_id,
         ticket_price=price,
-        # ``booked_at`` will be filled by the DB default (now()) if omitted
     ).returning(*tickets.c)
     result: Result = session.execute(stmt)
     session.commit()
@@ -91,6 +94,7 @@ def create_ticket(session: Session, payload: TicketCreate) -> TicketRead:
     join_stmt = (
         select(
             tickets.c.id,
+            tickets.c.event_name,
             tickets.c.customer_name,
             tickets.c.contact_number,
             tickets.c.type_id,
@@ -111,17 +115,20 @@ def search_tickets(
     ticket_id: Optional[int] = None,
     name: Optional[str] = None,
     contact: Optional[str] = None,
+    event: Optional[str] = None,
 ) -> List[TicketRead]:
     """Search tickets by optional criteria.
 
     * ``ticket_id`` – exact match on ticket id.
     * ``name`` – case‑insensitive partial match on ``customer_name`` (uses ILIKE).
     * ``contact`` – case‑insensitive partial match on ``contact_number``.
+    * ``event`` – case‑insensitive partial match on ``event_name``.
     Returns a list of matching ``TicketRead`` objects.
     """
     stmt = (
         select(
             tickets.c.id,
+            tickets.c.event_name,
             tickets.c.customer_name,
             tickets.c.contact_number,
             tickets.c.type_id,
@@ -138,43 +145,10 @@ def search_tickets(
         stmt = stmt.where(tickets.c.customer_name.ilike(f"%{name}%"))
     if contact:
         stmt = stmt.where(tickets.c.contact_number.ilike(f"%{contact}%"))
+    if event:
+        stmt = stmt.where(tickets.c.event_name.ilike(f"%{event}%"))
     rows = session.execute(stmt).all()
     return [_row_to_ticket_read(r) for r in rows]
-
-    """Insert a new ticket.
-
-    * ``payload`` is a ``TicketCreate`` Pydantic model (validated by FastAPI).
-    * The price is looked up from ``ticket_types`` based on ``payload.type_id``.
-    * ``booked_at`` defaults to ``datetime.utcnow()`` on the DB side.
-    """
-    price = _get_price_for_type(session, payload.type_id)
-    stmt = insert(tickets).values(
-        customer_name=payload.customer_name,
-        contact_number=payload.contact_number,
-        type_id=payload.type_id,
-        ticket_price=price,
-        # ``booked_at`` will be filled by the DB default (now()) if omitted
-    ).returning(*tickets.c)
-    result: Result = session.execute(stmt)
-    session.commit()
-    ticket_row = result.first()
-    # Join with ticket_types to include the nested ``type`` field
-    join_stmt = (
-        select(
-            tickets.c.id,
-            tickets.c.customer_name,
-            tickets.c.contact_number,
-            tickets.c.type_id,
-            tickets.c.ticket_price,
-            tickets.c.booked_at,
-            ticket_types.c.name,
-            ticket_types.c.price,
-        )
-        .select_from(tickets.join(ticket_types, tickets.c.type_id == ticket_types.c.id))
-        .where(tickets.c.id == ticket_row.id)
-    )
-    joined = session.execute(join_stmt).first()
-    return _row_to_ticket_read(joined)
 
 
 def get_ticket(session: Session, ticket_id: int) -> Optional[TicketRead]:
@@ -182,6 +156,7 @@ def get_ticket(session: Session, ticket_id: int) -> Optional[TicketRead]:
     stmt = (
         select(
             tickets.c.id,
+            tickets.c.event_name,
             tickets.c.customer_name,
             tickets.c.contact_number,
             tickets.c.type_id,
@@ -202,6 +177,7 @@ def list_tickets(session: Session, skip: int = 0, limit: int = 100) -> List[Tick
     stmt = (
         select(
             tickets.c.id,
+            tickets.c.event_name,
             tickets.c.customer_name,
             tickets.c.contact_number,
             tickets.c.type_id,
@@ -221,22 +197,21 @@ def list_tickets(session: Session, skip: int = 0, limit: int = 100) -> List[Tick
 def update_ticket(
     session: Session, ticket_id: int, payload: TicketCreate
 ) -> Optional[TicketRead]:
-    """Replace mutable fields of a ticket.
-
-    The price is *not* accepted from the client – it is recomputed from the
-    (potentially new) ``type_id``.
-    """
+    """Replace mutable fields of a ticket."""
     price = _get_price_for_type(session, payload.type_id)
+    values = {
+        "customer_name": payload.customer_name,
+        "contact_number": payload.contact_number,
+        "type_id": payload.type_id,
+        "ticket_price": price,
+    }
+    if payload.event_name:
+        values["event_name"] = payload.event_name
+
     stmt = (
         update(tickets)
         .where(tickets.c.id == ticket_id)
-        .values(
-            customer_name=payload.customer_name,
-            contact_number=payload.contact_number,
-            type_id=payload.type_id,
-            ticket_price=price,
-            # ``updated_at`` will be refreshed by the DB trigger/default
-        )
+        .values(**values)
         .returning(*tickets.c)
     )
     result = session.execute(stmt)
@@ -248,6 +223,7 @@ def update_ticket(
     join_stmt = (
         select(
             tickets.c.id,
+            tickets.c.event_name,
             tickets.c.customer_name,
             tickets.c.contact_number,
             tickets.c.type_id,

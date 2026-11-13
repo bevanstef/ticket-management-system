@@ -30,6 +30,7 @@ class TicketTypeRead(TicketTypeBase):
 
 
 class TicketBase(BaseModel):
+    event_name: Optional[str] = Field("Colombo Music Carnival & Baila Night", max_length=150)
     customer_name: str = Field(..., max_length=100)
     contact_number: str = Field(..., max_length=20)
     type_id: int
@@ -47,12 +48,12 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(TicketBase):
-    # booked_at defaults to now on the DB side, but client can optionally send it
-    pass
+    event_name: Optional[str] = "Colombo Music Carnival & Baila Night"
 
 
 class TicketRead(TicketBase):
     id: int
+    event_name: str
     booked_at: datetime
     type: TicketTypeRead
 

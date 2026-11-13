@@ -19,6 +19,7 @@ ON CONFLICT (name) DO NOTHING;
 -- Tickets table
 CREATE TABLE IF NOT EXISTS tickets (
     id SERIAL PRIMARY KEY,
+    event_name VARCHAR(150) NOT NULL DEFAULT 'Colombo Music Carnival & Baila Night',
     customer_name VARCHAR(100) NOT NULL,
     contact_number VARCHAR(20) NOT NULL,
     type_id INTEGER NOT NULL REFERENCES ticket_types(id),
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     booked_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_tickets_id ON tickets (id);
+CREATE INDEX IF NOT EXISTS ix_tickets_event_name ON tickets (event_name);
 
 -- Users table (authentication & RBAC)
 CREATE TABLE IF NOT EXISTS users (
