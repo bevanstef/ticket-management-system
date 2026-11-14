@@ -181,7 +181,7 @@ export default function BookTicketPage() {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.label}>Customer Name</label>
+                <label className={styles.label}>User Name</label>
                 <input
                   type="text"
                   required
