@@ -29,6 +29,16 @@ def create_ticket(
     """Create a ticket – accessible to all authenticated users."""
     return crud.create_ticket(db, payload)
 
+# ---------- MY TICKETS (customer & staff) ----------
+@router.get("/my-tickets", response_model=list[schemas.TicketRead])
+def get_my_tickets(
+    db: Session = Depends(dependencies.get_db),
+    current_user: dict = Depends(dependencies.get_current_user),
+):
+    """Retrieve all tickets belonging to the authenticated user."""
+    username = current_user.get("username", "")
+    return crud.get_user_tickets(db, username=username)
+
 # ---------- SEARCH (staff only) ----------
 @router.get("/search", response_model=list[schemas.TicketRead])
 def search_tickets(

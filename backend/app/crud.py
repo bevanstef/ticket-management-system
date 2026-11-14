@@ -147,6 +147,29 @@ def search_tickets(
         stmt = stmt.where(tickets.c.contact_number.ilike(f"%{contact}%"))
     if event:
         stmt = stmt.where(tickets.c.event_name.ilike(f"%{event}%"))
+    stmt = stmt.order_by(tickets.c.booked_at.desc())
+    rows = session.execute(stmt).all()
+    return [_row_to_ticket_read(r) for r in rows]
+
+
+def get_user_tickets(session: Session, username: str) -> List[TicketRead]:
+    """Retrieve all tickets booked by a specific user (matched case-insensitively)."""
+    stmt = (
+        select(
+            tickets.c.id,
+            tickets.c.event_name,
+            tickets.c.customer_name,
+            tickets.c.contact_number,
+            tickets.c.type_id,
+            tickets.c.ticket_price,
+            tickets.c.booked_at,
+            ticket_types.c.name,
+            ticket_types.c.price,
+        )
+        .select_from(tickets.join(ticket_types, tickets.c.type_id == ticket_types.c.id))
+        .where(tickets.c.customer_name.ilike(username))
+        .order_by(tickets.c.booked_at.desc())
+    )
     rows = session.execute(stmt).all()
     return [_row_to_ticket_read(r) for r in rows]
 

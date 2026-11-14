@@ -52,7 +52,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.execute(stmt).first()
     if user is None:
         raise credentials_exception
-    return {"id": user.id, "role": user.role}
+    return {"id": user.id, "username": user.username, "role": user.role}
 
 
 def require_staff(current_user: Dict = Depends(get_current_user)) -> Dict:
