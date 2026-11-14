@@ -149,6 +149,17 @@ export default function BookTicketPage() {
               </button>
 
               <button
+                onClick={() => router.push("/my-bookings")}
+                className={styles.submitBtn}
+                style={{
+                  background: "linear-gradient(135deg, #0284c7, #38bdf8)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                View My Bookings &rarr;
+              </button>
+
+              <button
                 onClick={() => router.push("/")}
                 className={styles.submitBtn}
                 style={{
