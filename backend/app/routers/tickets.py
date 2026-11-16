@@ -52,6 +52,18 @@ def search_tickets(
     """Search tickets by optional criteria – staff only."""
     return crud.search_tickets(db, ticket_id=ticket_id, name=name, contact=contact, event=event)
 
+# ---------- READ DIGITAL TICKET (public e-ticket view for QR scan) ----------
+@router.get("/digital/{ticket_id}", response_model=schemas.TicketRead)
+def get_digital_ticket(
+    ticket_id: int,
+    db: Session = Depends(dependencies.get_db),
+):
+    """Retrieve digital ticket details for viewing via QR code scan."""
+    ticket = crud.get_ticket(db, ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return ticket
+
 # ---------- READ ONE (staff only) ----------
 @router.get("/{ticket_id}", response_model=schemas.TicketRead)
 def get_ticket(
