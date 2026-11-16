@@ -55,6 +55,19 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return {"id": user.id, "username": user.username, "role": user.role}
 
 
+def require_customer(current_user: Dict = Depends(get_current_user)) -> Dict:
+    """Dependency that ensures the authenticated user has the 'customer' role.
+
+    Raises HTTP 403 Forbidden if the user is not a customer.
+    """
+    if current_user.get("role") != "customer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Customer privileges required",
+        )
+    return current_user
+
+
 def require_staff(current_user: Dict = Depends(get_current_user)) -> Dict:
     """Dependency that ensures the authenticated user has the 'staff' role.
 

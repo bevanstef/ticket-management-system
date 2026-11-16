@@ -180,9 +180,11 @@ export default function Home() {
           <div className={styles.navActions}>
             {user ? (
               <>
-                <Link href="/my-bookings" className={styles.staffLink}>
-                  My Bookings
-                </Link>
+                {user.role === "customer" && (
+                  <Link href="/my-bookings" className={styles.staffLink}>
+                    My Bookings
+                  </Link>
+                )}
                 <div className={styles.userBadge}>
                   <span>👤 {user.username}</span>
                 </div>

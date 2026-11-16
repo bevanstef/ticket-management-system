@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
@@ -25,13 +26,18 @@ interface Ticket {
 
 export default function MyBookingsPage() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    if (user && user.role !== "customer") {
+      router.replace("/tickets");
+      return;
+    }
     fetchMyTickets();
-  }, []);
+  }, [user]);
 
   const fetchMyTickets = async () => {
     try {
