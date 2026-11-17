@@ -66,7 +66,7 @@ export default function MyBookingsPage() {
           <Link href="/" className={styles.brand}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo5.PNG" alt="Ticketz Logo" className={styles.brandLogo} />
-            <span className={styles.brandTitle}>Ticketz Sri Lanka</span>
+            <span className={styles.brandTitle}>Ticketz</span>
           </Link>
 
           <div className={styles.navActions}>
