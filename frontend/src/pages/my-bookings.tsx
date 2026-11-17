@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { getEventDetails } from "../utils/eventHelpers";
 import styles from "../styles/MyBookings.module.css";
 
 interface TicketType {
@@ -30,6 +31,7 @@ export default function MyBookingsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 
   useEffect(() => {
     if (user && user.role !== "customer") {
@@ -187,13 +189,115 @@ export default function MyBookingsPage() {
                         LKR {Number(t.ticket_price).toLocaleString()}
                       </div>
                     </div>
-                    <span className={styles.statusPill}>● Confirmed</span>
+                  </div>
+
+                  <div className={styles.cardActionRow}>
+                    <button
+                      className={styles.viewDigitalBtn}
+                      onClick={() => setSelectedTicket(t)}
+                    >
+                      <span>📱</span>
+                      <span>View Digital Ticket</span>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </main>
+
+        {/* Digital Ticket Modal (UI Only) */}
+        {selectedTicket && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setSelectedTicket(null)}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.modalBanner}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={getEventDetails(selectedTicket.event_name).image}
+                  alt={selectedTicket.event_name}
+                  className={styles.modalBannerImage}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = "/pic 1.png";
+                  }}
+                />
+                <button
+                  className={styles.modalCloseBtn}
+                  onClick={() => setSelectedTicket(null)}
+                  title="Close Pass"
+                >
+                  ✕
+                </button>
+                <div className={styles.modalBadgeRow}>
+                  <span className={styles.ticketBadge}>
+                    {selectedTicket.type?.name || "Pass"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.modalBody}>
+                <div>
+                  <h2 className={styles.modalEventTitle}>
+                    {selectedTicket.event_name}
+                  </h2>
+                  <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginTop: "0.25rem" }}>
+                    Ticket Pass #TKT-{selectedTicket.id}
+                  </p>
+                </div>
+
+                <div className={styles.modalInfoGrid}>
+                  <div className={styles.detailBox}>
+                    <span className={styles.detailLabel}>Attendee</span>
+                    <span className={styles.detailValue}>
+                      {selectedTicket.customer_name}
+                    </span>
+                  </div>
+                  <div className={styles.detailBox}>
+                    <span className={styles.detailLabel}>Contact</span>
+                    <span className={styles.detailValue}>
+                      {selectedTicket.contact_number}
+                    </span>
+                  </div>
+                  <div className={styles.detailBox}>
+                    <span className={styles.detailLabel}>Date & Time</span>
+                    <span className={styles.detailValue}>
+                      {getEventDetails(selectedTicket.event_name).date} • {getEventDetails(selectedTicket.event_name).time}
+                    </span>
+                  </div>
+                  <div className={styles.detailBox}>
+                    <span className={styles.detailLabel}>Venue</span>
+                    <span className={styles.detailValue}>
+                      {getEventDetails(selectedTicket.event_name).venue}
+                    </span>
+                  </div>
+                </div>
+
+                {/* QR Code Placeholder UI */}
+                <div className={styles.modalQrPlaceholder}>
+                  <span className={styles.modalQrIcon}>📱</span>
+                  <span className={styles.modalQrTitle}>Digital QR Pass</span>
+                  <p className={styles.modalQrDesc}>
+                    QR code generation will be activated here for gate scanning.
+                  </p>
+                </div>
+
+                <div className={styles.modalActions}>
+                  <button
+                    onClick={() => window.print()}
+                    className={styles.printPassBtn}
+                  >
+                    🖨️ Print Pass
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   );
