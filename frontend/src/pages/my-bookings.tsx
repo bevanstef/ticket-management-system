@@ -2,6 +2,8 @@ import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import axios from "axios";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -32,6 +34,23 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [networkBaseUrl, setNetworkBaseUrl] = useState<string>("");
+
+  useEffect(() => {
+    // Detect host IP or public URL for QR scan
+    axios
+      .get<{ baseUrl: string }>("/api/network-ip")
+      .then((res) => {
+        if (res.data?.baseUrl) {
+          setNetworkBaseUrl(res.data.baseUrl);
+        }
+      })
+      .catch(() => {
+        if (typeof window !== "undefined") {
+          setNetworkBaseUrl(window.location.origin);
+        }
+      });
+  }, []);
 
   useEffect(() => {
     if (user && user.role !== "customer") {
@@ -277,12 +296,20 @@ export default function MyBookingsPage() {
                   </div>
                 </div>
 
-                {/* QR Code Placeholder UI */}
-                <div className={styles.modalQrPlaceholder}>
-                  <span className={styles.modalQrIcon}>📱</span>
-                  <span className={styles.modalQrTitle}>Digital QR Pass</span>
+                {/* QR Code Section */}
+                <div className={styles.modalQrContainer}>
+                  <div className={styles.qrCodeCard}>
+                    <QRCodeSVG
+                      value={`${networkBaseUrl || "http://localhost:3000"}/digital-ticket/${selectedTicket.id}`}
+                      size={170}
+                      level="M"
+                      bgColor="#ffffff"
+                      fgColor="#0f172a"
+                    />
+                  </div>
+                  <span className={styles.modalQrTitle}>Scan for Digital Pass</span>
                   <p className={styles.modalQrDesc}>
-                    QR code generation will be activated here for gate scanning.
+                    Scan with a phone camera to verify and display this official pass.
                   </p>
                 </div>
 
