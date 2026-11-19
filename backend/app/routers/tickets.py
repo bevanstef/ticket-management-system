@@ -53,16 +53,62 @@ def search_tickets(
     return crud.search_tickets(db, ticket_id=ticket_id, name=name, contact=contact, event=event)
 
 # ---------- READ DIGITAL TICKET (public e-ticket view for QR scan) ----------
-@router.get("/digital/{ticket_id}", response_model=schemas.TicketRead)
+@router.get("/digital/{ticket_id}", response_model=schemas.DigitalTicketResponse)
 def get_digital_ticket(
     ticket_id: int,
+    sig: Optional[str] = Query(None, description="Cryptographic QR code signature"),
     db: Session = Depends(dependencies.get_db),
 ):
-    """Retrieve digital ticket details for viewing via QR code scan."""
+    """Retrieve digital ticket details and verification status for viewing via QR code scan."""
     ticket = crud.get_ticket(db, ticket_id)
     if ticket is None:
         raise HTTPException(status_code=404, detail="Ticket not found")
-    return ticket
+
+    from ..auth import verify_ticket_signature
+
+    is_authentic = verify_ticket_signature(ticket_id, sig) if sig else True
+
+    message = "Genuine Ticket Pass"
+    if not is_authentic:
+        message = "Warning: Ticket QR signature mismatch or altered"
+    elif ticket.is_used:
+        message = "Notice: This ticket pass has already been admitted"
+
+    return schemas.DigitalTicketResponse(
+        ticket=ticket,
+        is_authentic=is_authentic,
+        is_used=ticket.is_used,
+        scanned_at=ticket.scanned_at,
+        message=message,
+    )
+
+
+# ---------- CHECK-IN TICKET (Option B: Staff Confirmation Action) ----------
+@router.post("/{ticket_id}/check-in", response_model=schemas.DigitalTicketResponse)
+def check_in_ticket(
+    ticket_id: int,
+    db: Session = Depends(dependencies.get_db),
+    current_user: dict = Depends(dependencies.require_staff),
+):
+    """Mark a ticket as used / admitted – restricted to staff."""
+    ticket = crud.get_ticket(db, ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+
+    if ticket.is_used:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ticket was already admitted at {ticket.scanned_at}",
+        )
+
+    updated_ticket = crud.check_in_ticket(db, ticket_id)
+    return schemas.DigitalTicketResponse(
+        ticket=updated_ticket,
+        is_authentic=True,
+        is_used=True,
+        scanned_at=updated_ticket.scanned_at,
+        message="Admission confirmed. Attendee checked in.",
+    )
 
 # ---------- READ ONE (staff only) ----------
 @router.get("/{ticket_id}", response_model=schemas.TicketRead)

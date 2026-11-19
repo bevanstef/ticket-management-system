@@ -56,6 +56,17 @@ class TicketRead(TicketBase):
     event_name: str
     booked_at: datetime
     type: TicketTypeRead
+    is_used: bool = False
+    scanned_at: Optional[datetime] = None
+    qr_token: Optional[str] = None
+
+
+class DigitalTicketResponse(BaseModel):
+    ticket: TicketRead
+    is_authentic: bool
+    is_used: bool
+    scanned_at: Optional[datetime] = None
+    message: str
 
 
 # ---------------------------------------------------------------------------

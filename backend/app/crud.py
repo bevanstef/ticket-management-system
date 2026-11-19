@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from .models import tickets, ticket_types
 from .schemas import TicketCreate, TicketRead, TicketTypeRead
+from .auth import generate_ticket_signature
 
 # ---------------------------------------------------------------------------
 # Helper utilities (pure functions)
@@ -44,17 +45,19 @@ def _row_to_ticket_read(row: Tuple) -> TicketRead:
     """Convert a raw ``tickets`` row (joined with ``ticket_types``) into a
     ``TicketRead`` Pydantic model.
     """
-    (
-        id,
-        event_name,
-        customer_name,
-        contact_number,
-        type_id,
-        ticket_price,
-        booked_at,
-        type_name,
-        type_price,
-    ) = row
+    # Unpack columns dynamically based on length
+    id = row[0]
+    event_name = row[1]
+    customer_name = row[2]
+    contact_number = row[3]
+    type_id = row[4]
+    ticket_price = row[5]
+    booked_at = row[6]
+    is_used = bool(row[7]) if len(row) > 9 else False
+    scanned_at = row[8] if len(row) > 9 else None
+    type_name = row[-2]
+    type_price = row[-1]
+
     ticket_type = TicketTypeRead(id=type_id, name=type_name, price=type_price)
     return TicketRead(
         id=id,
@@ -64,6 +67,9 @@ def _row_to_ticket_read(row: Tuple) -> TicketRead:
         type_id=type_id,
         ticket_price=ticket_price,
         booked_at=booked_at,
+        is_used=is_used,
+        scanned_at=scanned_at,
+        qr_token=generate_ticket_signature(id),
         type=ticket_type,
     )
 
@@ -163,6 +169,8 @@ def get_user_tickets(session: Session, username: str) -> List[TicketRead]:
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,
+            tickets.c.is_used,
+            tickets.c.scanned_at,
             ticket_types.c.name,
             ticket_types.c.price,
         )
@@ -185,6 +193,8 @@ def get_ticket(session: Session, ticket_id: int) -> Optional[TicketRead]:
             tickets.c.type_id,
             tickets.c.ticket_price,
             tickets.c.booked_at,
+            tickets.c.is_used,
+            tickets.c.scanned_at,
             ticket_types.c.name,
             ticket_types.c.price,
         )
@@ -268,6 +278,23 @@ def delete_ticket(session: Session, ticket_id: int) -> bool:
     result = session.execute(stmt)
     session.commit()
     return result.rowcount > 0
+
+
+def check_in_ticket(session: Session, ticket_id: int) -> Optional[TicketRead]:
+    """Mark a ticket as used and record scanned_at timestamp.
+    
+    Returns the updated TicketRead, or None if the ticket doesn't exist.
+    """
+    stmt = (
+        update(tickets)
+        .where(tickets.c.id == ticket_id)
+        .values(is_used=1, scanned_at=datetime.utcnow())
+    )
+    result = session.execute(stmt)
+    session.commit()
+    if result.rowcount == 0:
+        return None
+    return get_ticket(session, ticket_id)
 
 # ---------------------------------------------------------------------------
 # Ticket‑type helpers (read‑only for this phase)

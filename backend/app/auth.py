@@ -61,6 +61,24 @@ def decode_access_token(token: str) -> dict:
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
 # ---------------------------------------------------------------------------
+# Ticket QR Code HMAC Signature helpers
+# ---------------------------------------------------------------------------
+import hmac
+import hashlib
+
+def generate_ticket_signature(ticket_id: int) -> str:
+    """Generate a tamper-proof HMAC signature for a ticket ID."""
+    message = f"tkt_sig:{ticket_id}".encode("utf-8")
+    return hmac.new(SECRET_KEY.encode("utf-8"), message, hashlib.sha256).hexdigest()[:24]
+
+def verify_ticket_signature(ticket_id: int, signature: str) -> bool:
+    """Verify that the provided signature matches the ticket ID."""
+    if not signature:
+        return False
+    expected = generate_ticket_signature(ticket_id)
+    return hmac.compare_digest(expected, signature)
+
+# ---------------------------------------------------------------------------
 # FastAPI OAuth2 scheme (used in dependencies)
 # ---------------------------------------------------------------------------
 from fastapi.security import OAuth2PasswordBearer

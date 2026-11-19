@@ -57,6 +57,8 @@ tickets = Table(
     Column("type_id", Integer, ForeignKey("ticket_types.id"), nullable=False),
     Column("ticket_price", Integer, nullable=False),
     Column("booked_at", DateTime, server_default=func.now(), nullable=False),
+    Column("is_used", Integer, server_default="0", nullable=False),  # 0: unused, 1: used/admitted
+    Column("scanned_at", DateTime, nullable=True),
 )
 
 # Note: No ORM relationships – queries will join on ``type_id`` manually.

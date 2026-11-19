@@ -5,9 +5,16 @@ from dotenv import load_dotenv
 
 from .database import engine, Base
 from . import models
+from sqlalchemy import text
 
 # Ensure all database tables exist on startup
 Base.metadata.create_all(bind=engine)
+
+# Safely add is_used and scanned_at columns if not already present in existing databases
+with engine.connect() as conn:
+    conn.execute(text("ALTER TABLE tickets ADD COLUMN IF NOT EXISTS is_used INTEGER DEFAULT 0 NOT NULL;"))
+    conn.execute(text("ALTER TABLE tickets ADD COLUMN IF NOT EXISTS scanned_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL;"))
+    conn.commit()
 
 app = FastAPI(title="Ticket Management API", version="1.0.0")
 
