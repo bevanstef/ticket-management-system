@@ -24,6 +24,9 @@ interface Ticket {
   type_id: number;
   ticket_price: number;
   booked_at: string;
+  is_used?: boolean;
+  scanned_at?: string;
+  qr_token?: string;
   type?: TicketType;
 }
 
@@ -300,7 +303,9 @@ export default function MyBookingsPage() {
                 <div className={styles.modalQrContainer}>
                   <div className={styles.qrCodeCard}>
                     <QRCodeSVG
-                      value={`${networkBaseUrl || "http://localhost:3000"}/digital-ticket/${selectedTicket.id}`}
+                      value={`${networkBaseUrl || "http://localhost:3000"}/digital-ticket/${selectedTicket.id}${
+                        selectedTicket.qr_token ? `?sig=${selectedTicket.qr_token}` : ""
+                      }`}
                       size={170}
                       level="M"
                       bgColor="#ffffff"

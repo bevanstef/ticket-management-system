@@ -1,21 +1,28 @@
 // src/services/api.ts
 import axios, { AxiosInstance } from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Determine API URL dynamically in browser so phones/external devices connect to laptop's IP
+const getBaseURL = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    return `http://${window.location.hostname}:8000`;
+  }
+  return "http://localhost:8000";
+};
 
-/**
- * Axios instance with automatic JWT injection and 401 handling.
- */
 const api: AxiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: getBaseURL(),
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Attach token from localStorage to every request
+// Update baseURL dynamically in request interceptor if window is available
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
+    config.baseURL = getBaseURL();
     const token = localStorage.getItem("tms_token");
     if (token && config.headers) {
       config.headers["Authorization"] = `Bearer ${token}`;
